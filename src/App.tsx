@@ -42,15 +42,18 @@ function AppContent() {
     if (!profile?.plan || profile.plan === "free") {
       const trialEndsAt = (profile as any)?.trial_ends_at;
       if (trialEndsAt && new Date(trialEndsAt) < new Date()) {
+        if (currentPage === "billing") {
+          return <Billing />;
+        }
         return (
           <div className="flex flex-col items-center justify-center h-full p-8">
             <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
               <div className="text-5xl mb-4">⏰</div>
               <h2 className="text-gray-900 text-xl font-bold mb-2">
-                Free Trial Khatam Ho Gayi!
+                Free Trial Khatam Ho Gaya Hai!
               </h2>
               <p className="text-gray-500 text-sm mb-6">
-                Apni WhatsApp automation continue karne ke liye plan upgrade
+                Apna WhatsApp automation continue karne ke liye plan upgrade
                 karo.
               </p>
               <button
@@ -60,7 +63,7 @@ function AppContent() {
                 Upgrade Now 🚀
               </button>
               <p className="text-gray-400 text-xs mt-4">
-                Questions? WhatsApp karo: +91 79831 45818
+                Questions? WhatsApp karo: +91 88875 32915
               </p>
             </div>
           </div>

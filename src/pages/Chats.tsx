@@ -47,13 +47,11 @@ export default function Chats() {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `user_id=eq.${user.id}`,
+          // filter hata diya
         },
         async (payload) => {
-          console.log("New message:", payload);
-          // Conversations refresh karo
+          console.log("New message received:", payload);
           loadConversations();
-          // Agar current conversation open hai toh messages bhi refresh karo
           if (
             selectedConvRef.current?.id === (payload.new as any).conversation_id
           ) {

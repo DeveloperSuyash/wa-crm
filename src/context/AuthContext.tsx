@@ -1,15 +1,30 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
-import { Profile } from '../lib/types';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
+import { Profile } from "../lib/types";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, businessName: string) => Promise<{ error: string | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  isTrialActive: boolean;
+  trialDaysLeft: number;
+  signUp: (
+    email: string,
+    password: string,
+    businessName: string,
+  ) => Promise<{ error: string | null }>;
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -24,9 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
       .maybeSingle();
     if (data) setProfile(data as Profile);
   };
@@ -46,7 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -63,32 +80,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, businessName: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    businessName: string,
+  ) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) return { error: error.message };
     if (data.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
+      const { error: profileError } = await supabase.from("profiles").insert({
         id: data.user.id,
         business_name: businessName,
       });
       if (profileError) return { error: profileError.message };
-      await supabase.from('ai_settings').insert({ user_id: data.user.id });
+      await supabase.from("ai_settings").insert({ user_id: data.user.id });
     }
     return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) return { error: error.message };
     return { error: null };
   };
+  const isTrialActive = profile
+    ? new Date((profile as any).trial_ends_at) > new Date()
+    : false;
 
+  const trialDaysLeft = profile
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date((profile as any).trial_ends_at).getTime() -
+            new Date().getTime()) /
+            (1000 * 60 * 60 * 24),
+        ),
+      )
+    : 14;
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        profile,
+        loading,
+        isTrialActive,
+        trialDaysLeft,
+        signUp,
+        signIn,
+        signOut,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -96,6 +146,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }

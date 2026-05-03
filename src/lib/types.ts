@@ -7,6 +7,8 @@ export interface Profile {
   plan: 'free' | 'starter' | 'pro' | 'enterprise';
   ai_enabled: boolean;
   ai_api_key: string;
+  trial_ends_at: string;
+is_trial: boolean;
   monthly_message_limit: number;
   monthly_ai_limit: number;
   timezone: string;

@@ -50,7 +50,7 @@ export default function Chats() {
           // filter hata diya
         },
         async (payload) => {
-          console.log("New message received:", payload);
+          // console.log("New message received:", payload);
           loadConversations();
           if (
             selectedConvRef.current?.id === (payload.new as any).conversation_id

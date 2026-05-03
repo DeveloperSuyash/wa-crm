@@ -1,7 +1,7 @@
-import { useState, ReactNode } from 'react';
-import Sidebar from './Sidebar';
-import Header from './Header';
-import { Page } from '../../lib/types';
+import { useState, ReactNode } from "react";
+import Sidebar from "./Sidebar";
+import Header from "./Header";
+import { Page } from "../../lib/types";
 
 interface LayoutProps {
   currentPage: Page;
@@ -9,7 +9,11 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-export default function Layout({ currentPage, onNavigate, children }: LayoutProps) {
+export default function Layout({
+  currentPage,
+  onNavigate,
+  children,
+}: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -24,10 +28,9 @@ export default function Layout({ currentPage, onNavigate, children }: LayoutProp
         <Header
           currentPage={currentPage}
           onMenuClick={() => setSidebarOpen(true)}
+          onNavigate={onNavigate}
         />
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

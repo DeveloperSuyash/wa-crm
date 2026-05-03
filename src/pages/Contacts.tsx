@@ -50,6 +50,7 @@ export default function Contacts() {
   const [formData, setFormData] = useState<ContactFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
   useEffect(() => {
@@ -164,12 +165,16 @@ export default function Contacts() {
     loadContacts();
   };
 
-  const filtered = contacts.filter(
-    (c) =>
+  const filtered = contacts.filter((c) => {
+    const matchesSearch =
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.phone.includes(search) ||
-      c.email?.toLowerCase().includes(search.toLowerCase()),
-  );
+      c.email?.toLowerCase().includes(search.toLowerCase());
+    const matchesTag = selectedTag
+      ? (c.tags || []).includes(selectedTag)
+      : true;
+    return matchesSearch && matchesTag;
+  });
 
   const avatarColors = [
     "bg-emerald-500",
@@ -217,6 +222,40 @@ export default function Contacts() {
               className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
+          {/* Tag Filters */}
+          {Array.from(new Set(contacts.flatMap((c) => c.tags || []))).length >
+            0 && (
+            <div className="px-4 py-2 border-b border-gray-100 flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setSelectedTag(null)}
+                className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${
+                  selectedTag === null
+                    ? "bg-emerald-500 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                All
+              </button>
+              {Array.from(new Set(contacts.flatMap((c) => c.tags || []))).map(
+                (tag) => (
+                  <button
+                    key={tag}
+                    onClick={() =>
+                      setSelectedTag(selectedTag === tag ? null : tag)
+                    }
+                    className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${
+                      selectedTag === tag
+                        ? "bg-emerald-500 text-white"
+                        : TAG_COLORS[tag] ||
+                          "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ),
+              )}
+            </div>
+          )}
           <button className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500">
             <Filter className="w-4 h-4" />
           </button>

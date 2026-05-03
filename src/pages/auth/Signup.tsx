@@ -1,6 +1,6 @@
-import { useState, FormEvent } from 'react';
-import { Wifi, Eye, EyeOff, ArrowRight, CheckCircle } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useState, FormEvent } from "react";
+import { Wifi, Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 interface SignupProps {
   onSwitchToLogin: () => void;
@@ -8,20 +8,24 @@ interface SignupProps {
 
 export default function Signup({ onSwitchToLogin }: SignupProps) {
   const { signUp } = useAuth();
-  const [businessName, setBusinessName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [businessName, setBusinessName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
-    if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    setError("");
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
     setLoading(true);
-    const { error } = await signUp(email, password, businessName);
+    const { error } = await signUp(email, password, businessName, referralCode);
     if (error) setError(error);
     else setSuccess(true);
     setLoading(false);
@@ -35,9 +39,12 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
             <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-emerald-500" />
             </div>
-            <h2 className="text-gray-900 text-xl font-bold mb-2">Account Created!</h2>
+            <h2 className="text-gray-900 text-xl font-bold mb-2">
+              Account Created!
+            </h2>
             <p className="text-gray-500 text-sm mb-6">
-              Check your email to confirm your account, then sign in to get started.
+              Check your email to confirm your account, then sign in to get
+              started.
             </p>
             <button
               onClick={onSwitchToLogin}
@@ -59,12 +66,18 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
             <Wifi className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-white text-3xl font-bold">WA CRM</h1>
-          <p className="text-slate-400 mt-1">Start automating your WhatsApp today</p>
+          <p className="text-slate-400 mt-1">
+            Start automating your WhatsApp today
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-gray-900 text-xl font-bold mb-1">Create your account</h2>
-          <p className="text-gray-500 text-sm mb-6">Free plan · No credit card required</p>
+          <h2 className="text-gray-900 text-xl font-bold mb-1">
+            Create your account
+          </h2>
+          <p className="text-gray-500 text-sm mb-6">
+            Free plan · No credit card required
+          </p>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-5">
@@ -74,7 +87,9 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-1.5">Business name</label>
+              <label className="block text-gray-700 text-sm font-medium mb-1.5">
+                Business name
+              </label>
               <input
                 type="text"
                 value={businessName}
@@ -85,7 +100,21 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
               />
             </div>
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-1.5">Email address</label>
+              <label className="block text-gray-700 text-sm font-medium mb-1.5">
+                Referral Code (optional)
+              </label>
+              <input
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                placeholder="Enter referral code"
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-200 text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-medium mb-1.5">
+                Email address
+              </label>
               <input
                 type="email"
                 value={email}
@@ -96,10 +125,12 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
               />
             </div>
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-1.5">Password</label>
+              <label className="block text-gray-700 text-sm font-medium mb-1.5">
+                Password
+              </label>
               <div className="relative">
                 <input
-                  type={showPass ? 'text' : 'password'}
+                  type={showPass ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 6 characters"
@@ -111,7 +142,11 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPass ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -123,14 +158,19 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
               {loading ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
               ) : (
-                <>Create Account <ArrowRight className="w-4 h-4" /></>
+                <>
+                  Create Account <ArrowRight className="w-4 h-4" />
+                </>
               )}
             </button>
           </form>
 
           <p className="text-center text-gray-500 text-sm mt-6">
-            Already have an account?{' '}
-            <button onClick={onSwitchToLogin} className="text-emerald-600 font-semibold hover:underline">
+            Already have an account?{" "}
+            <button
+              onClick={onSwitchToLogin}
+              className="text-emerald-600 font-semibold hover:underline"
+            >
               Sign in
             </button>
           </p>

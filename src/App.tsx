@@ -13,6 +13,7 @@ import Templates from "./pages/Templates";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
 import Guide from "./pages/Guide";
+import Referral from "./pages/Referral";
 import { Page } from "./lib/types";
 
 function AppContent() {
@@ -90,6 +91,8 @@ function AppContent() {
         return <Billing />;
       case "guide":
         return <Guide />;
+      case "referral":
+        return <Referral />;
       case "settings":
         return <Settings />;
       default:

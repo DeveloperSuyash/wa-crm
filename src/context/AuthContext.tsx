@@ -20,6 +20,7 @@ interface AuthContextType {
     email: string,
     password: string,
     businessName: string,
+    referralCode?: string,
   ) => Promise<{ error: string | null }>;
   signIn: (
     email: string,

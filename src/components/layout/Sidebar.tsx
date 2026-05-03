@@ -12,6 +12,7 @@ import {
   ChevronRight,
   X,
   Wifi,
+  Gift,
   HelpCircle,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -39,6 +40,7 @@ const navItems: {
   { id: "templates", label: "Templates", icon: FileText },
   { id: "billing", label: "Billing", icon: CreditCard },
   { id: "guide", label: "Help & Guide", icon: HelpCircle },
+  { id: "referral", label: "Refer & Earn", icon: Gift },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 

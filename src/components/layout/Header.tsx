@@ -12,6 +12,7 @@ const pageTitles: Record<Page, string> = {
   templates: "Templates",
   billing: "Billing & Usage",
   guide: "Help & Guide",
+  referral: "Refer & Earn",
   settings: "Settings",
 };
 
@@ -25,6 +26,7 @@ const pageDescriptions: Record<Page, string> = {
   templates: "Manage WhatsApp message templates",
   billing: "Track usage and manage your plan",
   guide: "Features, use cases aur setup guide",
+  referral: "Refer karo aur commission kamao",
   settings: "Account and integration settings",
 };
 

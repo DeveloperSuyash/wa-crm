@@ -67,7 +67,7 @@ export default function Settings() {
     setSaving(false);
   };
 
-  const webhookUrl = `${window.location.origin}/webhook/${user?.id?.slice(0, 8)}`;
+  const webhookUrl = `https://vgfzlmowbqtoxyfhptvv.supabase.co/functions/v1/webhook`;
 
   const tabs = [
     { id: "account" as const, label: "Account", icon: User },

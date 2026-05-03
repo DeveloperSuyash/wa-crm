@@ -62,6 +62,14 @@ const phoneNumberId = value?.metadata?.phone_number_id
   .maybeSingle()
 
     if (!profile) return new Response('OK', { status: 200 })
+      // Trial check karo
+const trialEndsAt = profile.trial_ends_at ? new Date(profile.trial_ends_at) : null;
+const isTrialExpired = trialEndsAt ? trialEndsAt < new Date() : false;
+const isPaidPlan = profile.plan !== 'free';
+
+if (isTrialExpired && !isPaidPlan) {
+  return new Response('OK', { status: 200 })
+}
     const userId = profile.id
 
     let { data: contact } = await supabase

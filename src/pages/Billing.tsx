@@ -403,6 +403,92 @@ export default function Billing() {
           ))}
         </div>
       </div>
+
+      {/* Add-ons Section */}
+      <div className="mt-8">
+        <h3 className="text-gray-900 font-bold text-lg mb-2">Add-ons</h3>
+        <p className="text-gray-500 text-sm mb-4">
+          Extra resources kharidо apni zaroorat ke hisaab se
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              name: "Extra AI Replies",
+              desc: "500 additional AI replies",
+              price: "₹299",
+              icon: "🤖",
+            },
+            {
+              name: "Extra AI Replies",
+              desc: "2,000 additional AI replies",
+              price: "₹999",
+              icon: "🤖",
+            },
+            {
+              name: "Extra Contacts",
+              desc: "1,000 additional contacts",
+              price: "₹399",
+              icon: "👥",
+            },
+            {
+              name: "Extra Team Member",
+              desc: "1 additional team member/month",
+              price: "₹299",
+              icon: "👤",
+            },
+            {
+              name: "Setup + Onboarding",
+              desc: "One-time setup assistance",
+              price: "₹1,999",
+              icon: "🚀",
+            },
+            {
+              name: "AI Training",
+              desc: "Custom system prompt setup",
+              price: "₹999",
+              icon: "✨",
+            },
+            {
+              name: "Template Creation",
+              desc: "5 WhatsApp approved templates",
+              price: "₹499",
+              icon: "📄",
+            },
+            {
+              name: "Priority Support",
+              desc: "1 month priority support",
+              price: "₹499",
+              icon: "⚡",
+            },
+          ].map((addon) => (
+            <div
+              key={addon.name + addon.price}
+              className="bg-white rounded-xl border border-gray-200 shadow-sm p-4"
+            >
+              <div className="text-2xl mb-2">{addon.icon}</div>
+              <h4 className="text-gray-900 font-semibold text-sm">
+                {addon.name}
+              </h4>
+              <p className="text-gray-500 text-xs mt-1 mb-3">{addon.desc}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-900 font-bold">{addon.price}</span>
+                <button
+                  onClick={() =>
+                    window.open(
+                      `https://wa.me/917983145818?text=Hi, I want to purchase: ${addon.name} (${addon.price})`,
+                      "_blank",
+                    )
+                  }
+                  className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors"
+                >
+                  Buy Now
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

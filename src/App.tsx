@@ -15,7 +15,7 @@ import Settings from "./pages/Settings";
 import { Page } from "./lib/types";
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, profile } = useAuth();
   const [authView, setAuthView] = useState<"login" | "signup">("login");
   const [currentPage, setCurrentPage] = useState<Page>("dashboard");
 
@@ -38,6 +38,35 @@ function AppContent() {
   }
 
   const renderPage = () => {
+    // Trial expired check
+    if (!profile?.plan || profile.plan === "free") {
+      const trialEndsAt = (profile as any)?.trial_ends_at;
+      if (trialEndsAt && new Date(trialEndsAt) < new Date()) {
+        return (
+          <div className="flex flex-col items-center justify-center h-full p-8">
+            <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+              <div className="text-5xl mb-4">⏰</div>
+              <h2 className="text-gray-900 text-xl font-bold mb-2">
+                Free Trial Khatam Ho Gayi!
+              </h2>
+              <p className="text-gray-500 text-sm mb-6">
+                Apni WhatsApp automation continue karne ke liye plan upgrade
+                karo.
+              </p>
+              <button
+                onClick={() => setCurrentPage("billing")}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-colors"
+              >
+                Upgrade Now 🚀
+              </button>
+              <p className="text-gray-400 text-xs mt-4">
+                Questions? WhatsApp karo: +91 79831 45818
+              </p>
+            </div>
+          </div>
+        );
+      }
+    }
     switch (currentPage) {
       case "dashboard":
         return <Dashboard onNavigate={setCurrentPage} />;

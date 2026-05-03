@@ -7,6 +7,7 @@ import {
   MessageSquare,
   TrendingUp,
   ArrowUpRight,
+  Users,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
@@ -15,6 +16,8 @@ interface UsageData {
   messages: number;
   ai: number;
   broadcasts: number;
+  contacts: number;
+  autoReplies: number;
 }
 
 const plans = [
@@ -134,6 +137,8 @@ export default function Billing() {
     messages: 0,
     ai: 0,
     broadcasts: 0,
+    contacts: 0,
+    autoReplies: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -141,7 +146,7 @@ export default function Billing() {
     if (!user) return;
     const load = async () => {
       const monthYear = new Date().toISOString().slice(0, 7);
-      const [msgRes, aiRes, bcRes] = await Promise.all([
+      const [msgRes, aiRes, bcRes, contactRes, arRes] = await Promise.all([
         supabase
           .from("messages")
           .select("id", { count: "exact" })
@@ -159,11 +164,22 @@ export default function Billing() {
           .eq("user_id", user.id)
           .eq("status", "completed")
           .gte("created_at", `${monthYear}-01`),
+        supabase
+          .from("contacts")
+          .select("id", { count: "exact" })
+          .eq("user_id", user.id),
+        supabase
+          .from("auto_replies")
+          .select("id", { count: "exact" })
+          .eq("user_id", user.id)
+          .eq("is_active", true),
       ]);
       setUsage({
         messages: msgRes.count || 0,
         ai: aiRes.count || 0,
         broadcasts: bcRes.count || 0,
+        contacts: contactRes.count || 0, // 👈 ye add karo
+        autoReplies: arRes.count || 0, // 👈 ye add karo
       });
       setLoading(false);
     };
@@ -264,9 +280,47 @@ export default function Billing() {
                 {
                   label: "Broadcasts Sent",
                   value: usage.broadcasts,
-                  llimit: (currentPlan as any).broadcastLimit || 5,
+                  limit: (currentPlan as any).broadcastLimit || 5,
+                  pct: Math.min(
+                    100,
+                    Math.round(
+                      (usage.broadcasts /
+                        ((currentPlan as any).broadcastLimit || 5)) *
+                        100,
+                    ),
+                  ),
                   icon: TrendingUp,
                   color: "bg-emerald-500",
+                },
+                {
+                  label: "Contacts",
+                  value: usage.contacts,
+                  limit: (currentPlan as any).contactLimit || 1000,
+                  pct: Math.min(
+                    100,
+                    Math.round(
+                      (usage.contacts /
+                        ((currentPlan as any).contactLimit || 1000)) *
+                        100,
+                    ),
+                  ),
+                  icon: Users,
+                  color: "bg-teal-500",
+                },
+                {
+                  label: "Auto Replies",
+                  value: usage.autoReplies,
+                  limit: (currentPlan as any).autoReplyLimit || 10,
+                  pct: Math.min(
+                    100,
+                    Math.round(
+                      (usage.autoReplies /
+                        ((currentPlan as any).autoReplyLimit || 10)) *
+                        100,
+                    ),
+                  ),
+                  icon: Zap,
+                  color: "bg-yellow-500",
                 },
               ].map((item) => {
                 const Icon = item.icon;
@@ -280,11 +334,10 @@ export default function Billing() {
                         </span>
                       </div>
                       <span className="text-gray-900 text-sm font-semibold">
-                        {item.value.toLocaleString()}{" "}
-                        {item.value.toLocaleString()}{" "}
+                        {item.value.toLocaleString()} /{" "}
                         {(item.limit || 0) < 999999
-                          ? `/ ${(item.limit || 0).toLocaleString()}`
-                          : "/ Unlimited"}
+                          ? (item.limit || 0).toLocaleString()
+                          : "Unlimited"}
                       </span>
                     </div>
                     <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">

@@ -23,6 +23,10 @@ export default function Chats() {
   const [selectedConv, setSelectedConv] = useState<
     (Conversation & { contact: Contact }) | null
   >(null);
+  const selectedConvRef = useRef<(Conversation & { contact: Contact }) | null>(
+    null,
+  ); // 👈 YAHAN
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,6 +38,32 @@ export default function Chats() {
   useEffect(() => {
     if (!user) return;
     loadConversations();
+    // Realtime subscription
+    const channel = supabase
+      .channel("messages-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `user_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          console.log("New message:", payload);
+          // Conversations refresh karo
+          loadConversations();
+          // Agar current conversation open hai toh messages bhi refresh karo
+          if (selectedConvRef.current) {
+            await loadMessages(selectedConvRef.current.id);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   useEffect(() => {
@@ -71,6 +101,7 @@ export default function Chats() {
     conv: Conversation & { contact: Contact },
   ) => {
     setSelectedConv(conv);
+    selectedConvRef.current = conv;
     setShowChat(true);
     await loadMessages(conv.id);
   };

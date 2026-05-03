@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Settings as SettingsIcon,
   Save,
@@ -8,6 +8,7 @@ import {
   Shield,
   Globe,
   User,
+  Camera,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
@@ -29,6 +30,9 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState<
     "account" | "whatsapp" | "webhook" | "security"
   >("account");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
@@ -40,8 +44,34 @@ export default function Settings() {
         ai_api_key: profile.ai_api_key || "",
         timezone: profile.timezone || "UTC",
       });
+      setAvatarUrl((profile as any).avatar_url || null);
     }
   }, [profile]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingAvatar(true);
+
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, { upsert: true });
+
+    if (!uploadError) {
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      const url = `${data.publicUrl}?t=${Date.now()}`;
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("id", user.id);
+      setAvatarUrl(url);
+      await refreshProfile();
+    }
+    setUploadingAvatar(false);
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -67,6 +97,18 @@ export default function Settings() {
     setSaving(false);
   };
 
+  const handleDeleteAccount = async () => {
+    if (
+      !confirm(
+        "Are you sure? This will permanently delete your account and all data. This cannot be undone!",
+      )
+    )
+      return;
+    if (!confirm("Last warning — are you absolutely sure?")) return;
+    await supabase.from("profiles").delete().eq("id", user!.id);
+    await supabase.auth.signOut();
+  };
+
   const webhookUrl = `https://vgfzlmowbqtoxyfhptvv.supabase.co/functions/v1/webhook`;
 
   const tabs = [
@@ -75,6 +117,16 @@ export default function Settings() {
     { id: "webhook" as const, label: "Webhook", icon: Webhook },
     { id: "security" as const, label: "Security", icon: Shield },
   ];
+
+  const avatarColors = [
+    "bg-emerald-500",
+    "bg-blue-500",
+    "bg-orange-500",
+    "bg-rose-500",
+    "bg-teal-500",
+  ];
+  const getColor = (name: string) =>
+    avatarColors[name.charCodeAt(0) % avatarColors.length];
 
   return (
     <div className="p-4 lg:p-8 max-w-3xl">
@@ -123,6 +175,65 @@ export default function Settings() {
       {activeTab === "account" && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
           <h3 className="text-gray-900 font-semibold">Account Information</h3>
+
+          {/* Avatar Upload */}
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Avatar"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                />
+              ) : (
+                <div
+                  className={`w-16 h-16 rounded-full ${getColor(formData.business_name || "A")} flex items-center justify-center text-white font-bold text-xl`}
+                >
+                  {(formData.business_name || user?.email || "A")
+                    .charAt(0)
+                    .toUpperCase()}
+                </div>
+              )}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="absolute -bottom-1 -right-1 w-7 h-7 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center transition-colors"
+              >
+                {uploadingAvatar ? (
+                  <span className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin"></span>
+                ) : (
+                  <Camera className="w-3.5 h-3.5" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
+            </div>
+            <div>
+              <p className="text-gray-900 text-sm font-medium">Profile Photo</p>
+              <p className="text-gray-400 text-xs mt-0.5">JPG, PNG — Max 2MB</p>
+              {avatarUrl && (
+                <button
+                  onClick={async () => {
+                    await supabase
+                      .from("profiles")
+                      .update({ avatar_url: null })
+                      .eq("id", user!.id);
+                    setAvatarUrl(null);
+                    await refreshProfile();
+                  }}
+                  className="text-xs text-red-500 hover:text-red-600 mt-1"
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
+          </div>
+
           <div>
             <label className="block text-gray-700 text-sm font-medium mb-1.5">
               Business Name
@@ -433,7 +544,10 @@ export default function Settings() {
                 Permanently delete your account and all associated data. This
                 action cannot be undone.
               </p>
-              <button className="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors">
+              <button
+                onClick={handleDeleteAccount}
+                className="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors"
+              >
                 Delete My Account
               </button>
             </div>

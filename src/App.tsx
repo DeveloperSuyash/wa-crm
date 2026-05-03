@@ -12,6 +12,7 @@ import Broadcast from "./pages/Broadcast";
 import Templates from "./pages/Templates";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
+import Guide from "./pages/Guide";
 import { Page } from "./lib/types";
 
 function AppContent() {
@@ -87,6 +88,8 @@ function AppContent() {
         return <Templates />;
       case "billing":
         return <Billing />;
+      case "guide":
+        return <Guide />;
       case "settings":
         return <Settings />;
       default:

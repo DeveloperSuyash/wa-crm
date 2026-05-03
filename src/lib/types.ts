@@ -132,4 +132,5 @@ export type Page =
   | 'broadcast'
   | 'templates'
   | 'billing'
+  | 'guide'
   | 'settings';

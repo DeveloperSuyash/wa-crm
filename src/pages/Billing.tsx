@@ -200,6 +200,9 @@ export default function Billing() {
       "Basic auto replies",
     ],
     limit: 1000,
+    broadcastLimit: 2, // 👈 ye add karo
+    autoReplyLimit: 5, // 👈 ye add karo
+    contactLimit: 200, // 👈 ye add karo
     aiLimit: 100,
   };
 

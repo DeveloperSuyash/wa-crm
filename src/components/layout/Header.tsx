@@ -11,6 +11,7 @@ const pageTitles: Record<Page, string> = {
   broadcast: "Broadcast",
   templates: "Templates",
   billing: "Billing & Usage",
+  guide: "Help & Guide",
   settings: "Settings",
 };
 
@@ -23,6 +24,7 @@ const pageDescriptions: Record<Page, string> = {
   broadcast: "Send messages to multiple contacts",
   templates: "Manage WhatsApp message templates",
   billing: "Track usage and manage your plan",
+  guide: "Features, use cases aur setup guide",
   settings: "Account and integration settings",
 };
 

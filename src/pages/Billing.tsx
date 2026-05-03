@@ -161,8 +161,27 @@ export default function Billing() {
     load();
   }, [user]);
 
+  const freePlan = {
+    id: "free",
+    name: "Free Trial",
+    price: "₹0",
+    period: "/3 days",
+    features: [
+      "200 contacts",
+      "100 AI replies",
+      "2 broadcasts",
+      "5 templates",
+      "1 team member",
+      "Basic auto replies",
+    ],
+    limit: 1000,
+    aiLimit: 100,
+  };
+
   const currentPlan =
-    plans.find((p) => p.id === (profile?.plan || "free")) || plans[0];
+    profile?.plan === "free" || !profile?.plan
+      ? freePlan
+      : plans.find((p) => p.id === profile?.plan) || freePlan;
   const msgPct = Math.min(
     100,
     Math.round((usage.messages / (currentPlan.limit || 1000)) * 100),
@@ -360,6 +379,13 @@ export default function Billing() {
                 ))}
               </ul>
               <button
+                onClick={() => {
+                  if (plan.id === (profile?.plan || "free")) return;
+                  window.open(
+                    `https://wa.me/917983145818?text=Hi, I want to upgrade to ${plan.name} plan (${plan.price}/month)`,
+                    "_blank",
+                  );
+                }}
                 className={`w-full py-2 px-4 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors ${plan.btnColor} ${plan.id === (profile?.plan || "free") ? "opacity-60 cursor-default" : ""}`}
                 disabled={plan.id === (profile?.plan || "free")}
               >
@@ -369,7 +395,6 @@ export default function Billing() {
                   "Contact Sales"
                 ) : (
                   <>
-                    {" "}
                     Upgrade <ArrowUpRight className="w-3.5 h-3.5" />
                   </>
                 )}

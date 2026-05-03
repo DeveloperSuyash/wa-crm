@@ -18,24 +18,24 @@ interface UsageData {
 }
 
 const plans = [
-  {
-    id: "free",
-    name: "Free Trial",
-    price: "₹0",
-    period: "/3 days",
-    features: [
-      "200 contacts",
-      "100 AI replies",
-      "2 broadcasts",
-      "5 templates",
-      "1 team member",
-      "Basic auto replies",
-    ],
-    limit: 1000,
-    aiLimit: 100,
-    color: "border-gray-200",
-    btnColor: "bg-gray-100 text-gray-700 hover:bg-gray-200",
-  },
+  // {
+  //   id: "free",
+  //   name: "Free Trial",
+  //   price: "₹0",
+  //   period: "/3 days",
+  //   features: [
+  //     "200 contacts",
+  //     "100 AI replies",
+  //     "2 broadcasts",
+  //     "5 templates",
+  //     "1 team member",
+  //     "Basic auto replies",
+  //   ],
+  //   limit: 1000,
+  //   aiLimit: 100,
+  //   color: "border-gray-200",
+  //   btnColor: "bg-gray-100 text-gray-700 hover:bg-gray-200",
+  // },
   {
     id: "basic",
     name: "Basic",
@@ -326,7 +326,7 @@ export default function Billing() {
         <h3 className="text-gray-900 font-bold text-lg mb-4">
           Upgrade Your Plan
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {plans.map((plan) => (
             <div
               key={plan.id}

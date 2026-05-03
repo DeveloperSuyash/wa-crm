@@ -67,7 +67,7 @@ export default function Referral() {
     .reduce((sum, r) => sum + (r.commission || 0), 0);
 
   return (
-    <div className="p-4 lg:p-8 max-w-4xl">
+    <div className="p-4 lg:p-8 ">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="bg-pink-50 p-2 rounded-lg">
@@ -316,7 +316,7 @@ export default function Referral() {
         <p className="text-amber-700 text-xs leading-relaxed">
           Commission ₹500+ hone pe withdraw kar sakte hain. UPI pe directly
           transfer hoga. Withdrawal ke liye WhatsApp karein:{" "}
-          <strong>+91 79831 45818</strong>
+          <strong>+91 88875 32915</strong>
         </p>
       </div>
     </div>

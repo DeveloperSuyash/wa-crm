@@ -54,8 +54,15 @@ export default function Chats() {
           // Conversations refresh karo
           loadConversations();
           // Agar current conversation open hai toh messages bhi refresh karo
-          if (selectedConvRef.current) {
-            await loadMessages(selectedConvRef.current.id);
+          if (
+            selectedConvRef.current?.id === (payload.new as any).conversation_id
+          ) {
+            const { data } = await supabase
+              .from("messages")
+              .select("*")
+              .eq("conversation_id", selectedConvRef.current?.id)
+              .order("created_at", { ascending: true });
+            if (data) setMessages(data as Message[]);
           }
         },
       )

@@ -14,7 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import { Broadcast as BroadcastType } from "../lib/types";
 
 export default function Broadcast() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [broadcasts, setBroadcasts] = useState<BroadcastType[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +67,26 @@ export default function Broadcast() {
   };
 
   const handleCreate = async () => {
+    const monthYear = new Date().toISOString().slice(0, 7);
+    const { count } = await supabase
+      .from("broadcasts")
+      .select("id", { count: "exact" })
+      .eq("user_id", user!.id)
+      .gte("created_at", `${monthYear}-01`);
+
+    const limits: Record<string, number> = {
+      free: 2,
+      basic: 5,
+      standard: 20,
+      pro: 999999,
+      enterprise: 999999,
+    };
+    const limit = limits[profile?.plan || "free"] || 2;
+
+    if ((count || 0) >= limit) {
+      setError(`Broadcast limit reached! (${limit}/month). Upgrade your plan.`);
+      return;
+    }
     if (!formData.name.trim() || !formData.message.trim()) {
       setError("Name and message are required");
       return;

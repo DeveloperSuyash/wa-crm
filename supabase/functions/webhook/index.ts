@@ -112,7 +112,13 @@ if (isTrialExpired && !isPaidPlan) {
       status: 'delivered',
       wa_message_id: waMessageId,
     })
-
+await supabase.from('notifications').insert({
+  user_id: userId,
+  title: 'New Message',
+  message: `${contact.name || fromPhone}: ${text.slice(0, 50)}${text.length > 50 ? '...' : ''}`,
+  type: 'message',
+  is_read: false,
+})
     await supabase.from('conversations').update({
       last_message_at: new Date().toISOString(),
       last_inbound_at: new Date().toISOString(),

@@ -102,9 +102,17 @@ export default function Sidebar({
 
         <div className="px-4 py-4 border-b border-slate-700">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-              {initial}
-            </div>
+            {(profile as any)?.avatar_url ? (
+              <img
+                src={(profile as any).avatar_url}
+                alt="Avatar"
+                className="w-9 h-9 rounded-full object-cover flex-shrink-0 border-2 border-slate-600"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                {initial}
+              </div>
+            )}
             <div className="min-w-0">
               <p className="text-white text-sm font-medium truncate">
                 {profile?.business_name || "My Business"}

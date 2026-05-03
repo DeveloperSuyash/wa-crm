@@ -11,6 +11,7 @@ import {
   Check,
   Users,
   Filter,
+  Download,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
@@ -175,7 +176,40 @@ export default function Contacts() {
       : true;
     return matchesSearch && matchesTag;
   });
+  const exportCSV = () => {
+    const headers = [
+      "Name",
+      "Phone",
+      "Email",
+      "Tags",
+      "Notes",
+      "Last Message",
+      "Created At",
+    ];
+    const rows = contacts.map((c) => [
+      c.name,
+      c.phone,
+      c.email || "",
+      (c.tags || []).join(", "),
+      c.notes || "",
+      c.last_message || "",
+      new Date(c.created_at).toLocaleDateString("en-IN"),
+    ]);
 
+    const csvContent = [headers, ...rows]
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `contacts_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   const avatarColors = [
     "bg-emerald-500",
     "bg-blue-500",
@@ -207,6 +241,13 @@ export default function Contacts() {
           className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
         >
           <Plus className="w-4 h-4" /> Add Contact
+        </button>
+        // Add Contact button ke paas:
+        <button
+          onClick={exportCSV}
+          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+        >
+          <Download className="w-4 h-4" /> Export CSV
         </button>
       </div>
 

@@ -133,7 +133,7 @@ export default function Guide() {
   );
 
   return (
-    <div className="p-4 lg:p-8 max-w-5xl">
+    <div className="p-4 lg:p-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="bg-purple-50 p-2 rounded-lg">

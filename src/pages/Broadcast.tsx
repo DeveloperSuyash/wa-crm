@@ -17,12 +17,14 @@ export default function Broadcast() {
   const { user, profile } = useAuth();
   const [broadcasts, setBroadcasts] = useState<BroadcastType[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     message: "",
     scheduled_at: "",
+    selectedTags: [] as string[],
   });
   const [contactCount, setContactCount] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -33,6 +35,7 @@ export default function Broadcast() {
       load();
       loadContactCount();
       loadTemplates();
+      loadTags();
     }
   }, [user]);
 
@@ -66,6 +69,17 @@ export default function Broadcast() {
     if (data) setTemplates(data);
   };
 
+  const loadTags = async () => {
+    const { data } = await supabase
+      .from("contacts")
+      .select("tags")
+      .eq("user_id", user!.id);
+    if (data) {
+      const allTags = Array.from(new Set(data.flatMap((c) => c.tags || [])));
+      setAvailableTags(allTags);
+    }
+  };
+
   const handleCreate = async () => {
     const monthYear = new Date().toISOString().slice(0, 7);
     const { count } = await supabase
@@ -96,8 +110,9 @@ export default function Broadcast() {
       user_id: user!.id,
       name: formData.name.trim(),
       message: formData.message.trim(),
-      status: formData.scheduled_at ? "scheduled" : "draft", // ← ye hai?
+      status: formData.scheduled_at ? "scheduled" : "draft",
       total_recipients: contactCount,
+      selected_tags: formData.selectedTags,
       scheduled_at: formData.scheduled_at
         ? new Date(
             new Date(formData.scheduled_at).getTime() - 5.5 * 60 * 60 * 1000,
@@ -111,7 +126,7 @@ export default function Broadcast() {
     }
     setSaving(false);
     setShowModal(false);
-    setFormData({ name: "", message: "", scheduled_at: "" });
+    setFormData({ name: "", message: "", scheduled_at: "", selectedTags: [] });
     load();
   };
 
@@ -125,13 +140,12 @@ export default function Broadcast() {
       .eq("id", id);
     load();
 
-    // Get profile for WhatsApp credentials
-    const { data: profile } = await supabase
+    const { data: prof } = await supabase
       .from("profiles")
       .select("whatsapp_api_token, whatsapp_phone_id")
       .eq("id", user!.id)
       .single();
-    if (!profile?.whatsapp_api_token || !profile?.whatsapp_phone_id) {
+    if (!prof?.whatsapp_api_token || !prof?.whatsapp_phone_id) {
       await supabase
         .from("broadcasts")
         .update({ status: "failed" })
@@ -139,26 +153,33 @@ export default function Broadcast() {
       load();
       return;
     }
-    // Get all active contacts
-    const { data: contacts } = await supabase
+
+    // Tag filter
+    let contactQuery = supabase
       .from("contacts")
       .select("*")
       .eq("user_id", user!.id)
       .eq("status", "active");
 
+    const selectedTags = (broadcast as any).selected_tags;
+    if (selectedTags?.length > 0) {
+      contactQuery = (contactQuery as any).overlaps("tags", selectedTags);
+    }
+
+    const { data: contacts } = await contactQuery;
+
     let sentCount = 0;
     let failedCount = 0;
 
-    // Send to each contact
     for (const contact of contacts || []) {
       const phone = contact.phone?.replace("+", "");
       try {
         const res = await fetch(
-          `https://graph.facebook.com/v19.0/${profile!.whatsapp_phone_id}/messages`,
+          `https://graph.facebook.com/v19.0/${prof!.whatsapp_phone_id}/messages`,
           {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${profile!.whatsapp_api_token}`,
+              Authorization: `Bearer ${prof!.whatsapp_api_token}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -181,7 +202,6 @@ export default function Broadcast() {
       }
     }
 
-    // Update broadcast status
     await supabase
       .from("broadcasts")
       .update({
@@ -222,6 +242,7 @@ export default function Broadcast() {
       icon: XCircle,
     },
   };
+
   const deleteBroadcast = async (id: string) => {
     if (!confirm("Delete this broadcast?")) return;
     await supabase.from("broadcasts").delete().eq("id", id);
@@ -235,14 +256,14 @@ export default function Broadcast() {
         user_id: user!.id,
         name: `${b.name} (Resend)`,
         message: b.message,
-        status: formData.scheduled_at ? "scheduled" : "draft",
-        scheduled_at: formData.scheduled_at || null,
+        status: "draft",
         total_recipients: contactCount,
       })
       .select()
       .single();
     if (data) load();
   };
+
   return (
     <div className="p-4 lg:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -259,7 +280,12 @@ export default function Broadcast() {
         </div>
         <button
           onClick={() => {
-            setFormData({ name: "", message: "", scheduled_at: "" });
+            setFormData({
+              name: "",
+              message: "",
+              scheduled_at: "",
+              selectedTags: [],
+            });
             setError("");
             setShowModal(true);
           }}
@@ -355,6 +381,11 @@ export default function Broadcast() {
                           <Icon className="w-3 h-3" />
                           {config.label}
                         </span>
+                        {(b as any).selected_tags?.length > 0 && (
+                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                            🏷️ {(b as any).selected_tags.join(", ")}
+                          </span>
+                        )}
                       </div>
                       <p className="text-gray-500 text-sm line-clamp-2">
                         {b.message}
@@ -432,7 +463,7 @@ export default function Broadcast() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="text-gray-900 font-bold">New Broadcast</h2>
               <button
@@ -452,9 +483,16 @@ export default function Broadcast() {
                 <Users className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                 <p className="text-blue-700 text-sm">
                   This message will be sent to{" "}
-                  <strong>{contactCount} active contacts</strong>.
+                  <strong>
+                    {formData.selectedTags.length > 0
+                      ? `contacts with tags: ${formData.selectedTags.join(", ")}`
+                      : `${contactCount} active contacts`}
+                  </strong>
+                  .
                 </p>
               </div>
+
+              {/* Template */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1.5">
                   Use Template (optional)
@@ -480,6 +518,8 @@ export default function Broadcast() {
                   ))}
                 </select>
               </div>
+
+              {/* Campaign Name */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1.5">
                   Campaign Name *
@@ -494,6 +534,8 @@ export default function Broadcast() {
                   className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
+
+              {/* Message */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1.5">
                   Message *
@@ -511,6 +553,41 @@ export default function Broadcast() {
                   {formData.message.length}/1000 characters
                 </p>
               </div>
+
+              {/* Tag Filter */}
+              {availableTags.length > 0 && (
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1.5">
+                    Send to specific tags (optional)
+                  </label>
+                  <p className="text-gray-400 text-xs mb-2">
+                    Khali chhodo — sab active contacts ko jayega
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableTags.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          const tags = formData.selectedTags.includes(tag)
+                            ? formData.selectedTags.filter((t) => t !== tag)
+                            : [...formData.selectedTags, tag];
+                          setFormData({ ...formData, selectedTags: tags });
+                        }}
+                        className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                          formData.selectedTags.includes(tag)
+                            ? "bg-emerald-500 text-white"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Schedule */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1.5">
                   Schedule (optional)

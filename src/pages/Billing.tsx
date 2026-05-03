@@ -53,6 +53,9 @@ const plans = [
     ],
     limit: 1000,
     aiLimit: 500,
+    broadcastLimit: 5, // 👈 ye add karo
+    autoReplyLimit: 10, // 👈 ye add karo
+    contactLimit: 1000, // 👈 ye add karo
     color: "border-gray-200",
     btnColor: "bg-gray-100 text-gray-700 hover:bg-gray-200",
   },
@@ -73,6 +76,9 @@ const plans = [
     ],
     limit: 10000,
     aiLimit: 2000,
+    broadcastLimit: 20, // 👈 ye add karo
+    autoReplyLimit: 30, // 👈 ye add karo
+    contactLimit: 5000, // 👈 ye add karo
     color: "border-emerald-400",
     btnColor: "bg-emerald-500 hover:bg-emerald-600 text-white",
     popular: true,
@@ -96,6 +102,9 @@ const plans = [
     ],
     limit: 999999,
     aiLimit: 10000,
+    broadcastLimit: 999999, // 👈 ye add karo
+    autoReplyLimit: 999999, // 👈 ye add karo
+    contactLimit: 20000, // 👈 ye add karo
     color: "border-gray-200",
     btnColor: "bg-slate-800 hover:bg-slate-900 text-white",
   },
@@ -255,8 +264,7 @@ export default function Billing() {
                 {
                   label: "Broadcasts Sent",
                   value: usage.broadcasts,
-                  limit: 999,
-                  pct: Math.min(100, Math.round((usage.broadcasts / 10) * 100)),
+                  llimit: (currentPlan as any).broadcastLimit || 5,
                   icon: TrendingUp,
                   color: "bg-emerald-500",
                 },
@@ -273,19 +281,20 @@ export default function Billing() {
                       </div>
                       <span className="text-gray-900 text-sm font-semibold">
                         {item.value.toLocaleString()}{" "}
-                        {item.limit < 999999
-                          ? `/ ${item.limit.toLocaleString()}`
+                        {item.value.toLocaleString()}{" "}
+                        {(item.limit || 0) < 999999
+                          ? `/ ${(item.limit || 0).toLocaleString()}`
                           : "/ Unlimited"}
                       </span>
                     </div>
                     <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-700 ${item.pct > 80 ? "bg-red-500" : item.pct > 60 ? "bg-yellow-500" : item.color}`}
+                        className={`h-full rounded-full transition-all duration-700 ${(item.pct || 0) > 80 ? "bg-red-500" : (item.pct || 0) > 60 ? "bg-yellow-500" : item.color}`}
                         style={{ width: `${item.pct}%` }}
                       ></div>
                     </div>
                     <p className="text-gray-400 text-xs mt-1">
-                      {item.pct}% used
+                      {item.pct || 0}% used
                     </p>
                   </div>
                 );

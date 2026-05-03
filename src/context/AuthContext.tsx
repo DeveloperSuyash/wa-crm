@@ -85,13 +85,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string,
     password: string,
     businessName: string,
+    referralCode?: string, // 👈 ye add karo
   ) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) return { error: error.message };
     if (data.user) {
+      const newReferralCode = data.user.id.slice(0, 8).toUpperCase();
+
+      // Referrer dhundo
+      let referrerId = null;
+      if (referralCode) {
+        const { data: referrer } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("referral_code", referralCode)
+          .maybeSingle();
+        if (referrer) referrerId = referrer.id;
+      }
+
       const { error: profileError } = await supabase.from("profiles").insert({
         id: data.user.id,
         business_name: businessName,
+        referral_code: newReferralCode,
+        referred_by: referrerId,
       });
       if (profileError) return { error: profileError.message };
       await supabase.from("ai_settings").insert({ user_id: data.user.id });

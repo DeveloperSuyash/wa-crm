@@ -21,29 +21,12 @@ interface UsageData {
 }
 
 const plans = [
-  // {
-  //   id: "free",
-  //   name: "Free Trial",
-  //   price: "₹0",
-  //   period: "/3 days",
-  //   features: [
-  //     "200 contacts",
-  //     "100 AI replies",
-  //     "2 broadcasts",
-  //     "5 templates",
-  //     "1 team member",
-  //     "Basic auto replies",
-  //   ],
-  //   limit: 1000,
-  //   aiLimit: 100,
-  //   color: "border-gray-200",
-  //   btnColor: "bg-gray-100 text-gray-700 hover:bg-gray-200",
-  // },
   {
     id: "basic",
     name: "Basic",
     price: "₹1,199",
     period: "/month",
+    setupFee: "₹999",
     features: [
       "1,000 contacts",
       "Unlimited manual chats",
@@ -56,9 +39,9 @@ const plans = [
     ],
     limit: 1000,
     aiLimit: 500,
-    broadcastLimit: 5, // 👈 ye add karo
-    autoReplyLimit: 10, // 👈 ye add karo
-    contactLimit: 1000, // 👈 ye add karo
+    broadcastLimit: 5,
+    autoReplyLimit: 10,
+    contactLimit: 1000,
     color: "border-gray-200",
     btnColor: "bg-gray-100 text-gray-700 hover:bg-gray-200",
   },
@@ -67,6 +50,7 @@ const plans = [
     name: "Standard",
     price: "₹2,999",
     period: "/month",
+    setupFee: "₹1,499",
     features: [
       "5,000 contacts",
       "2,000 AI replies/month",
@@ -79,9 +63,9 @@ const plans = [
     ],
     limit: 10000,
     aiLimit: 2000,
-    broadcastLimit: 20, // 👈 ye add karo
-    autoReplyLimit: 30, // 👈 ye add karo
-    contactLimit: 5000, // 👈 ye add karo
+    broadcastLimit: 20,
+    autoReplyLimit: 30,
+    contactLimit: 5000,
     color: "border-emerald-400",
     btnColor: "bg-emerald-500 hover:bg-emerald-600 text-white",
     popular: true,
@@ -91,6 +75,7 @@ const plans = [
     name: "Pro",
     price: "₹5,999",
     period: "/month",
+    setupFee: "₹1,999",
     features: [
       "20,000 contacts",
       "10,000 AI replies/month",
@@ -105,9 +90,9 @@ const plans = [
     ],
     limit: 999999,
     aiLimit: 10000,
-    broadcastLimit: 999999, // 👈 ye add karo
-    autoReplyLimit: 999999, // 👈 ye add karo
-    contactLimit: 20000, // 👈 ye add karo
+    broadcastLimit: 999999,
+    autoReplyLimit: 999999,
+    contactLimit: 20000,
     color: "border-gray-200",
     btnColor: "bg-slate-800 hover:bg-slate-900 text-white",
   },
@@ -116,6 +101,7 @@ const plans = [
     name: "Enterprise",
     price: "Custom",
     period: "",
+    setupFee: "Custom",
     features: [
       "Unlimited everything",
       "Unlimited numbers",
@@ -126,6 +112,9 @@ const plans = [
     ],
     limit: 999999,
     aiLimit: 999999,
+    broadcastLimit: 999999,
+    autoReplyLimit: 999999,
+    contactLimit: 999999,
     color: "border-gray-200",
     btnColor: "bg-slate-100 text-slate-700 hover:bg-slate-200",
   },
@@ -178,8 +167,8 @@ export default function Billing() {
         messages: msgRes.count || 0,
         ai: aiRes.count || 0,
         broadcasts: bcRes.count || 0,
-        contacts: contactRes.count || 0, // 👈 ye add karo
-        autoReplies: arRes.count || 0, // 👈 ye add karo
+        contacts: contactRes.count || 0,
+        autoReplies: arRes.count || 0,
       });
       setLoading(false);
     };
@@ -191,6 +180,7 @@ export default function Billing() {
     name: "Free Trial",
     price: "₹0",
     period: "/3 days",
+    setupFee: "FREE",
     features: [
       "200 contacts",
       "100 AI replies",
@@ -200,9 +190,9 @@ export default function Billing() {
       "Basic auto replies",
     ],
     limit: 1000,
-    broadcastLimit: 2, // 👈 ye add karo
-    autoReplyLimit: 5, // 👈 ye add karo
-    contactLimit: 200, // 👈 ye add karo
+    broadcastLimit: 2,
+    autoReplyLimit: 5,
+    contactLimit: 200,
     aiLimit: 100,
   };
 
@@ -210,6 +200,7 @@ export default function Billing() {
     profile?.plan === "free" || !profile?.plan
       ? freePlan
       : plans.find((p) => p.id === profile?.plan) || freePlan;
+
   const msgPct = Math.min(
     100,
     Math.round((usage.messages / (currentPlan.limit || 1000)) * 100),
@@ -241,6 +232,25 @@ export default function Billing() {
           <p className="text-gray-500 text-xs">
             Monitor your usage and manage your plan
           </p>
+        </div>
+      </div>
+
+      {/* Limited offer banner */}
+      <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-4 mb-8 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🔥</span>
+          <div>
+            <p className="text-white font-bold text-sm">
+              Limited Time Offer — First 10 Customers Only!
+            </p>
+            <p className="text-amber-100 text-xs mt-0.5">
+              Setup fee completely FREE on any plan. Don't miss out!
+            </p>
+          </div>
+        </div>
+        <div className="bg-white/20 border border-white/30 rounded-xl px-4 py-2 text-center flex-shrink-0">
+          <p className="text-white text-xs font-medium">Spots Remaining</p>
+          <p className="text-white font-bold text-2xl">10</p>
         </div>
       </div>
 
@@ -346,7 +356,7 @@ export default function Billing() {
                     <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-700 ${(item.pct || 0) > 80 ? "bg-red-500" : (item.pct || 0) > 60 ? "bg-yellow-500" : item.color}`}
-                        style={{ width: `${item.pct}%` }}
+                        style={{ width: `${item.pct || 0}%` }}
                       ></div>
                     </div>
                     <p className="text-gray-400 text-xs mt-1">
@@ -370,7 +380,6 @@ export default function Billing() {
           <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-sm px-3 py-1 rounded-full font-semibold mb-4">
             <Zap className="w-3.5 h-3.5" /> {currentPlan.name} Plan
           </span>
-
           {profile?.plan === "free" && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
               <p className="text-amber-800 text-xs font-semibold">
@@ -383,7 +392,6 @@ export default function Billing() {
               </p>
             </div>
           )}
-
           <ul className="space-y-2 mb-5">
             {currentPlan.features.map((f) => (
               <li
@@ -407,9 +415,12 @@ export default function Billing() {
       </div>
 
       <div>
-        <h3 className="text-gray-900 font-bold text-lg mb-4">
-          Upgrade Your Plan
-        </h3>
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h3 className="text-gray-900 font-bold text-lg">Upgrade Your Plan</h3>
+          <span className="bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
+            🔥 Setup Fee FREE for First 10 Customers!
+          </span>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {plans.map((plan) => (
             <div
@@ -417,14 +428,14 @@ export default function Billing() {
               className={`bg-white rounded-xl border-2 ${plan.color} shadow-sm p-5 relative ${(plan as any).popular ? "ring-2 ring-emerald-400" : ""}`}
             >
               {(plan as any).popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-bold">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-bold whitespace-nowrap">
                   Most Popular
                 </div>
               )}
               <h4 className="text-gray-900 font-bold text-base mb-1">
                 {plan.name}
               </h4>
-              <div className="flex items-end gap-1 mb-4">
+              <div className="flex items-end gap-1 mb-1">
                 <span className="text-2xl font-bold text-gray-900">
                   {plan.price}
                 </span>
@@ -432,6 +443,19 @@ export default function Billing() {
                   {plan.period}
                 </span>
               </div>
+
+              {/* Setup Fee */}
+              {plan.price !== "Custom" && (
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-gray-400 text-xs line-through">
+                    {plan.setupFee} setup
+                  </span>
+                  <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                    FREE 🎉
+                  </span>
+                </div>
+              )}
+
               <ul className="space-y-2 mb-5">
                 {plan.features.map((f) => (
                   <li
@@ -447,7 +471,7 @@ export default function Billing() {
                 onClick={() => {
                   if (plan.id === (profile?.plan || "free")) return;
                   window.open(
-                    `https://wa.me/917983145818?text=Hi, I want to upgrade to ${plan.name} plan (${plan.price}/month)`,
+                    `https://wa.me/917983145818?text=Hi, I want to upgrade to ${plan.name} plan (${plan.price}/month). Setup fee FREE offer claim karna hai!`,
                     "_blank",
                   );
                 }}
@@ -473,9 +497,8 @@ export default function Billing() {
       <div className="mt-8">
         <h3 className="text-gray-900 font-bold text-lg mb-2">Add-ons</h3>
         <p className="text-gray-500 text-sm mb-4">
-          Extra resources kharidо apni zaroorat ke hisaab se
+          Extra resources kharido apni zaroorat ke hisaab se
         </p>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
